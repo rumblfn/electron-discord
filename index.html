@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmer app</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <form id="form" class="wrapper">
+        <div class="top">
+            <h1>Farmer app</h1>
+            <p class="token-title">Your user token
+                <a href="https://www.androidauthority.com/get-discord-token-3149920/">How to get token</a>
+            </p>
+            <input 
+                name="token" 
+                type="text" id="token" 
+                placeholder="discord token" 
+                class="field" 
+            />
+            <p>Channel id to send message</p>
+            <input 
+                name="channel" 
+                type="text" id="channel" 
+                placeholder="channel id" 
+                class="field" 
+            />
+            <p>Delay in seconds</p>
+            <input value="5"
+                name="delay" 
+                type="text" id="delay" 
+                placeholder="delay | default: 5" 
+                class="field" 
+            />
+            <div class="box">
+                <input class="field-checkbox"
+                    type="checkbox" id="delete" 
+                    name="delete" checked
+                >
+                <label for="delete">Delete message after sending</label>
+            </div>
+            <span id="msg-status" style="color: red">running false</span>
+        </div>
+        <div class="bottom">
+            <div class="bottom-left">
+                <button type="submit" class="button">Start farmer</button>
+                <p id="timer">Messages sent: 0</p>
+            </div>
+            <div class="bottom-right">
+                <button id="stop-farmer" class="button">Stop farmer</button>
+            </div>
+        </div>
+    </form>
+
+    <script> require('./render.js') </script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="./src/index.js"></script>
+</body>
+</html>
