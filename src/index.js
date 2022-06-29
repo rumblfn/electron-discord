@@ -7,32 +7,48 @@ const timer = document.getElementById('timer')
 const msgStatus = document.getElementById('msg-status')
 const buttonStop = document.getElementById('stop-farmer')
 
-let started = false
+var started = false
 
 tokenField.value = localStorage.token
 channelField.value = localStorage.channelId
 delayField.value = localStorage.delay
 checkBoxDelete.checked = eval(localStorage.toDelete)
 
-let token = ''
-let channelId = ''
-let delay = 5
-let toDelete = false
-let counter = 0
+var token = ''
+var channelId = ''
+var delay = 5000
+var autoDelay = 100
+var toDelete = false
+var counter = 0
 
-const deleteMessage = (token, channel, messageId) => {
-    const url = `https://discord.com/api/v8/channels/${channel}/messages/${messageId}`
+buttonStop.addEventListener('click', (e) => {
+    e.preventDefault()
+    msgStatus.style.color = 'red'
+    msgStatus.innerText = 'running false'
+    started = false
+})
 
-    fetch(url, {
+const deleteMessage = async (messageId) => {
+    const url = `https://discord.com/api/v8/channels/${channelId}/messages/${messageId}`
+
+    await fetch(url, {
         method: 'DELETE',
         headers: {
             "authorization": token
         }
     })
+
+    setTimeout(() => {
+        sendMessage()
+    }, delay)
 }
 
-const sendMessage = async (token, channel, toDelete) => {
-    const url = `https://discord.com/api/v8/channels/${channel}/messages`
+const sendMessage = async () => {
+    if (!started) {
+        return null
+    }
+
+    const url = `https://discord.com/api/v8/channels/${channelId}/messages`
 
     request = new XMLHttpRequest();
     request.withCredentials = true;
@@ -43,11 +59,16 @@ const sendMessage = async (token, channel, toDelete) => {
     request.setRequestHeader("content-type", "application/json");
 
     request.onload = () => {
-        const id = JSON.parse(request.response)['id']
+        const messageId = JSON.parse(request.response)['id']
         counter += 1
         timer.innerText = `Messages sent: ${counter}`
+
         if (toDelete) {
-            deleteMessage(token, channel, id)
+            deleteMessage(messageId)
+        } else {
+            setTimeout(() => {
+                sendMessage()
+            }, delay)
         }
     }
 
@@ -56,19 +77,11 @@ const sendMessage = async (token, channel, toDelete) => {
     }));
 }
 
-const startFarmer = (token, channel, delay, toDelete) => {
+const startFarmer = () => {
     msgStatus.style.color = 'green'
     msgStatus.innerText = 'running true'
 
-    const sendingInterval = setInterval(() => {
-        sendMessage(token, channel, toDelete)
-    }, delay * 1000)
-
-    buttonStop.addEventListener('click', () => {
-        clearInterval(sendingInterval)
-        msgStatus.style.color = 'red'
-        msgStatus.innerText = 'running false'
-    })
+    sendMessage()
 }
 
 const form = document.getElementById('form')
@@ -77,6 +90,7 @@ form.addEventListener('submit', event => {
     event.preventDefault()
 
     const data = new FormData(form);
+    toDelete = false
 
     for (const [name, value] of data) {
         if (name === 'token') {
@@ -85,10 +99,12 @@ form.addEventListener('submit', event => {
             channelId = value
         } else if (name === 'delay') {
             delay = parseInt(value)
-            if (isNaN(delay) && delay < 1) {
-                delay = 5
+            console.log(delay)
+            if (isNaN(delay) || delay < 100) {
+                delay = 5000
             }
-        } else if (name === 'delete') {
+        } else if (name === 'delete' && value === 'on') {
+            console.log(name, value)
             toDelete = true
         }
     }
@@ -100,6 +116,6 @@ form.addEventListener('submit', event => {
         localStorage.setItem('delay', delay)
         localStorage.setItem('toDelete', toDelete)
 
-        startFarmer(token, channelId, delay, toDelete)
+        startFarmer()
     }
 })
